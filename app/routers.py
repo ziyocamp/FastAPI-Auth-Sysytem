@@ -1,14 +1,14 @@
 from random import randint
 
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from fastapi_mail import FastMail, MessageSchema
 
 from .database import get_db
 
-from .schemas import UserCreate
+from .schemas import UserCreate, UserVerify
 from .models import User
 
 from passlib.context import CryptContext
@@ -54,3 +54,21 @@ async def register_api(user: UserCreate, db: Annotated[Session, Depends(get_db)]
 
     return {"message": "Email sent in the background"}
 
+@router.post("/verify")
+async def verify_api(user_verify: UserVerify, db: Annotated[Session, Depends(get_db)]):
+    user = db.query(User).filter(User.email == user_verify.email).first()
+
+    if user:
+        if user.verification_code == user_verify.verification_code:
+            user.is_active = True
+            user.is_verified = True
+
+            db.add(user)
+            db.commit()
+
+            return {"message": "success"}
+
+        else:
+            raise HTTPException(status_code=400, detail="siz xato verification code yubordingiz")
+    else:
+        raise HTTPException(status_code=400, detail="bunday user topilmadi")
