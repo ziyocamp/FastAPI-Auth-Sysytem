@@ -12,3 +12,8 @@ class UserCreate(BaseModel):
 class UserVerify(BaseModel):
     email: Annotated[str, EmailStr()]
     verification_code: int
+
+
+class UserLogin(BaseModel):
+    email: Annotated[str, EmailStr()]
+    password: Annotated[str, Field(min_length=8)]

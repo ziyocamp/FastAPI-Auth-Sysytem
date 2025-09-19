@@ -8,7 +8,7 @@ from fastapi_mail import FastMail, MessageSchema
 
 from .database import get_db
 
-from .schemas import UserCreate, UserVerify
+from .schemas import UserCreate, UserVerify, UserLogin
 from .models import User
 
 from passlib.context import CryptContext
@@ -54,6 +54,7 @@ async def register_api(user: UserCreate, db: Annotated[Session, Depends(get_db)]
 
     return {"message": "Email sent in the background"}
 
+
 @router.post("/verify")
 async def verify_api(user_verify: UserVerify, db: Annotated[Session, Depends(get_db)]):
     user = db.query(User).filter(User.email == user_verify.email).first()
@@ -70,5 +71,20 @@ async def verify_api(user_verify: UserVerify, db: Annotated[Session, Depends(get
 
         else:
             raise HTTPException(status_code=400, detail="siz xato verification code yubordingiz")
+    else:
+        raise HTTPException(status_code=400, detail="bunday user topilmadi")
+
+
+@router.post("/login")
+async def login_api(user_data: UserLogin, db: Annotated[Session, Depends(get_db)]):
+    user = db.query(User).filter(User.email == user_data.email, User.is_verified == True, User.is_active == True).first()
+
+    if user:
+        is_valid = pwd_context.verify(user_data.password, user.hashed_password)
+
+        if is_valid:
+            return {"message": "success"}
+        else:
+            raise HTTPException(status_code=401, detail="password xato")
     else:
         raise HTTPException(status_code=400, detail="bunday user topilmadi")
