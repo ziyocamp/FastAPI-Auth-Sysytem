@@ -7,6 +7,10 @@ from fastapi_mail import ConnectionConfig
 load_dotenv()
 
 class Settings:
+    # server confi
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    JWT_ALGORITHM = os.getenv("JWT_ALGORITHM")
+
     # Database config
     DB_HOST = os.getenv("DB_HOST")
     DB_PORT = os.getenv("DB_PORT")

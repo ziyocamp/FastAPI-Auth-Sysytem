@@ -1,3 +1,4 @@
+from enum import Enum
 from sqlalchemy import (
     Column,
     Integer,
@@ -5,10 +6,16 @@ from sqlalchemy import (
     Text,
     Boolean,
     ForeignKey,
+    Enum as SQLEnum,
 )
 from sqlalchemy.orm import relationship
 
 from .database import Base
+
+
+class UserRoles(Enum):
+    admin = "admin"
+    user = "user"
 
 
 class User(Base):
@@ -17,6 +24,7 @@ class User(Base):
     user_id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String(64), nullable=False)
     last_name = Column(String(64))
+    role = Column(String, SQLEnum(UserRoles), default=UserRoles.user, nullable=False)
     email = Column(String(256), unique=True, nullable=False)
     hashed_password = Column(String(512), nullable=False)
     is_active = Column(Boolean, default=False)
@@ -34,7 +42,7 @@ class User(Base):
             return self.first_name
         
     def __repr__(self) -> str:
-        return f"{self.user_id}: {self.email} - {self.full_name}"
+        return f"{self.user_id}-{self.role.value}: {self.email} - {self.full_name}"
 
 
 class Task(Base):
